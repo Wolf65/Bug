@@ -1,34 +1,54 @@
 package main
 
 import (
-	"unsafe"
-
 	imgui "github.com/AllenDang/cimgui-go"
+)
+
+var (
+	baseFontSize        float32 = 13
+	fontAwesomeFontSize float32 = baseFontSize * 4 / 3
 )
 
 func main() {
 	backend := imgui.CreateBackend(imgui.NewGLFWBackend())
 	backend.CreateWindow("bug", 1200, 900, 0)
 
-	RusRanges := []uint16{0x0020, 0xA69F, 0}
-	IconRange := []uint16{uint16(IconsFontAwesome6.Min), uint16(IconsFontAwesome6.Max16), 0}
+	// Base Font
 
-	jetBrainsConfig := imgui.NewFontConfig()
-	fontAwesomeConfig := imgui.NewFontConfig()
-	//v0.0.0-20230801075634-218b71149299 crach or SetMergeMode(false)
-	fontAwesomeConfig.SetMergeMode(true) //v0.0.0-20230619023324-e4dae85333e0 good
-	fontAwesomeConfig.SetPixelSnapH(true)
 	io := imgui.CurrentIO()
 
-	io.Fonts().AddFontFromFileTTFV("JetBrainsMono-Medium.ttf",
-		15,
-		jetBrainsConfig,
-		(*imgui.Wchar)(unsafe.Pointer(&RusRanges[0])))
+	baseConfig := *imgui.NewFontConfig()
+	baseConfig.SetPixelSnapH(true)
 
-	io.Fonts().AddFontFromFileTTFV("fa-solid-900.ttf",
-		40,
-		fontAwesomeConfig,
-		(*imgui.Wchar)(unsafe.Pointer(&IconRange[0])))
+	baseRange := imgui.NewGlyphRange()
+	baseBuilder := imgui.NewFontGlyphRangesBuilder()
+	baseBuilder.AddRanges(io.Fonts().GlyphRangesCyrillic())
+	baseBuilder.BuildRanges(baseRange)
+
+	io.Fonts().AddFontFromFileTTFV("fonts/ttf/JetBrainsMono-Medium.ttf",
+		baseFontSize,
+		&baseConfig,
+		baseRange.Data())
+
+	//File: D:/a/cimgui-go/cimgui-go/cimgui/imgui/imgui_draw.cpp, Line: 2208
+	//exit status 1
+
+	// FontAwesome
+	fontAwesomeConfig := *imgui.NewFontConfig()
+	fontAwesomeConfig.SetMergeMode(true)
+	fontAwesomeConfig.SetGlyphMinAdvanceX(fontAwesomeFontSize)
+	fontAwesomeConfig.SetGlyphMaxAdvanceX(fontAwesomeFontSize)
+	fontAwesomeConfig.SetPixelSnapH(true)
+	fontAwesomeConfig.SetGlyphOffset(imgui.Vec2{X: 0, Y: 2})
+
+	////Whoa, I caught a bug while I was doing the test. If you uncomment the code below
+	//IconRange := []uint16{uint16(IconsFontAwesome6.Min), uint16(IconsFontAwesome6.Max16), 0}
+	//io.Fonts().AddFontFromFileTTFV(fmt.Sprintf("fonts/ttf/%s",
+	//	IconsFontAwesome6.Filenames[1][1]),
+	//	fontAwesomeFontSize,
+	//	&fontAwesomeConfig,
+	//	imgui.SliceToPtr(IconRange))
+	////.\main.go:49:3: cannot use imgui.SliceToPtr(IconRange) (value of type *uint16) as *imgui.Wchar value in argument to io.Fonts().AddFontFromFileTTFV
 
 	backend.Run(loop)
 }

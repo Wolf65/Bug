@@ -1,8 +1,7 @@
 module bug
 
-go 1.20
+go 1.21
 
-//crash
-//require github.com/AllenDang/cimgui-go v0.0.0-20230801075634-218b71149299
-//good
-require github.com/AllenDang/cimgui-go v0.0.0-20230619023324-e4dae85333e0
+toolchain go1.21.1
+
+require github.com/AllenDang/cimgui-go v0.0.0-20230913100916-31ae0b8018a1
